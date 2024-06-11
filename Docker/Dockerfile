@@ -23,9 +23,12 @@ RUN wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-py37
 
 ENV PATH=/opt/miniconda/bin:${PATH}
 
-RUN conda init && conda env create -f src/sim2real_drone_racing/droneflow.yaml && echo "conda activate droneflow" >> ~/.bashrc
+RUN conda init && conda env create -f src/sim2real_drone_racing/droneflow.yaml && \
+    conda clean --all -y && \
+    echo "conda activate droneflow" >> ~/.bashrc
 
 RUN echo "bash" > /home/drone_racing_ws/start.sh && \
+    chmod +x /home/drone_racing_ws/start.sh && \
     echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc && \
     echo "source /home/drone_racing_ws/devel/setup.bash" >> ~/.bashrc
 
