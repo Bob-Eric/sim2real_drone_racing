@@ -20,16 +20,19 @@ class Network(object):
 
         self.config = config
         self.pub = rospy.Publisher("cnn_predictions", TwistStamped, queue_size=1)
-        self.feedthrough_sub = rospy.Subscriber("/hummingbird/state_change", Bool,
-                                                self.callback_feedthrough, queue_size=1)
-        self.checkpoint_sub = rospy.Subscriber("/checkpoint", String,
-                                               self.callback_checkpoint, queue_size=1)
+        self.feedthrough_sub = rospy.Subscriber(
+            "/hummingbird/state_change", Bool, self.callback_feedthrough, queue_size=1
+        )
+        self.checkpoint_sub = rospy.Subscriber(
+            "/checkpoint", String, self.callback_checkpoint, queue_size=1
+        )
 
-        self.gamma_sub = rospy.Subscriber("/gamma", String,
-                                          self.callback_gamma, queue_size=1)
+        self.gamma_sub = rospy.Subscriber(
+            "/gamma", String, self.callback_gamma, queue_size=1
+        )
 
         self.learner = TrajectoryLearner()
-        self.learner.setup_inference(config, mode='prediction')
+        self.learner.setup_inference(config, mode="prediction")
 
         self.saver = tf.train.Saver([var for var in tf.trainable_variables()])
         self.use_network_out = False
@@ -55,7 +58,9 @@ class Network(object):
         self.gamma = data.data
 
     def callback_checkpoint(self, data):
-        self.config.ckpt_file = self.config.checkpoint_dir + self.gamma + "/" + data.data
+        self.config.ckpt_file = (
+            self.config.checkpoint_dir + self.gamma + "/" + data.data
+        )
 
     def run(self, sess):
         self.sess = sess
@@ -64,8 +69,7 @@ class Network(object):
 
             while data_camera is None:
                 try:
-                    data_camera = rospy.wait_for_message("camera",
-                                                         Image)
+                    data_camera = rospy.wait_for_message("camera", Image)
 
                 except:
                     print("could not aquire image data")
@@ -87,17 +91,19 @@ class Network(object):
 
             inputs = {}
 
-            cv_input_image = cv2.resize(cv_input_image, (300, 200),
-                                 interpolation=cv2.INTER_LINEAR)
+            cv_input_image = cv2.resize(
+                cv_input_image, (300, 200), interpolation=cv2.INTER_LINEAR
+            )
 
-            inputs['images'] = cv_input_image[None]
+            inputs["images"] = cv_input_image[None]
             results = self.learner.inference(inputs, sess)
-            predictions = np.squeeze(results['predictions'])
+            predictions = np.squeeze(results["predictions"])
             msg = TwistStamped()
             msg.header.stamp = rospy.Time.now()
 
-            self.smoothed_pred = (1 - self.alpha) * self.smoothed_pred + \
-                                 self.alpha * predictions
+            self.smoothed_pred = (
+                1 - self.alpha
+            ) * self.smoothed_pred + self.alpha * predictions
 
             msg.twist.linear.x = self.smoothed_pred[0]
             msg.twist.linear.y = self.smoothed_pred[1]

@@ -60,7 +60,7 @@
             <rosparam file="$(find drone_racing)/parameters/goals.yaml"/>
             <param name="root_dir" value="$(find deep_drone_racing_learner)/data/Training"/>
             <param name="trajectory_path" value="$(find drone_racing)/resources/global_trajectories"/>
-            <param name="quad_frame" value="/hummingbird/base_link"/>
+            <param name="quad_frame" value="hummingbird/base_link"/>
         </node>
     </group>
 </launch>
